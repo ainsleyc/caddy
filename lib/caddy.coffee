@@ -18,10 +18,8 @@ module.exports.set = (key, data) ->
 
 wrap = (callback) ->
   if module.currScope
-    #console.log("Saving scope: " + JSON.stringify(module.currScope))
     savedScope = module.currScope
   ->
-    #console.log("Loading scope: " + JSON.stringify(savedScope))
     if savedScope
       module.currScope = savedScope
     callback.apply(this, arguments)
@@ -48,6 +46,7 @@ _on = EventEmitter.prototype.on
 EventEmitter.prototype.on = (event, callback) ->
   args = Array::slice.call(arguments)
   args[1] = wrap(callback)
+  args[1]._origCallback = callback
   _on.apply(this, args)
 
 _addListener = EventEmitter.prototype.addListener
@@ -61,6 +60,7 @@ _once = EventEmitter.prototype.once
 EventEmitter.prototype.once = (event, callback) ->
   args = Array::slice.call(arguments)
   args[1] = wrap(callback)
+  args[1]._origCallback = callback
   _once.apply(this, args)
 
 _removeListener = EventEmitter.prototype.removeListener
@@ -68,7 +68,7 @@ EventEmitter.prototype.removeListener = (event, callback) ->
   args = Array::slice.call(arguments)
   called = false
   for listener in this.listeners(event)
-    if listener._origCallback? is callback
+    if listener?._origCallback is callback
       called = true
       args[1] = listener
       _removeListener.apply(this, args)

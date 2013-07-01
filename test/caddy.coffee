@@ -75,14 +75,6 @@ describe 'function wrapping', ->
     emitter.addListener('exit', ->)
     expect(spyEmitterAddListener.calledOnce).to.be.true
 
-  it 'should wrap EventEmitter.removeListener', ->
-    expect(EventEmitter.prototype.removeListener).to.not.equal(spyEmitterRemoveListener)
-  it 'should call original EventEmitter.removeListener', ->
-    spyEmitterRemoveListener.reset()
-    emitter = new EventEmitter()
-    emitter.removeListener('exit', ->)
-    expect(spyEmitterRemoveListener.calledOnce).to.be.true
-
   it 'should wrap EventEmitter.once', ->
     expect(EventEmitter.prototype.once).to.not.equal(spyEmitterOnce)
   it 'should call original EventEmitter.once', ->
@@ -98,6 +90,38 @@ describe 'function wrapping', ->
     emitter = new EventEmitter()
     emitter.on('exit', ->)
     expect(spyEmitterOn.calledOnce).to.be.true
+
+  it 'should wrap EventEmitter.removeListener', ->
+    expect(EventEmitter.prototype.removeListener).to.not.equal(spyEmitterRemoveListener)
+  it 'should call original EventEmitter.removeListener', ->
+    spyEmitterRemoveListener.reset()
+    emitter = new EventEmitter()
+    emitter.removeListener('exit', ->)
+    expect(spyEmitterRemoveListener.calledOnce).to.be.true
+  it 'should removed wrapped event handlers when removeListener is called', ->
+    emitter = new EventEmitter()
+    cb1 = ->
+      return 1
+    cb2 = ->
+      return 2
+    emitter.addListener('cb1', cb1)
+    emitter.addListener('cb1', cb2)
+    emitter.on('cb2', cb2)
+
+    expect(emitter.listeners('cb1').length).to.equal(2)
+    expect(emitter.listeners('cb2').length).to.equal(1)
+
+    emitter.removeListener('cb1', cb1)
+    expect(emitter.listeners('cb1').length).to.equal(1)
+
+    emitter.removeListener('cb1', cb2)
+    expect(emitter.listeners('cb1').length).to.equal(0)
+
+    emitter.removeListener('cb2', cb1)
+    expect(emitter.listeners('cb2').length).to.equal(1)
+
+    emitter.removeListener('cb2', cb2)
+    expect(emitter.listeners('cb2').length).to.equal(0)
 
 describe 'data persistence', ->
   it 'should save data between process.nextTick calls', (done) ->
@@ -175,7 +199,7 @@ describe 'data persistence', ->
       clearInterval(interval3)
     , 100)
 
-describe 'node libraries', ->
+describe 'node library compatibility', ->
   it 'http.request', (done) ->
     urls = [
       'www.factual.com',
