@@ -1,12 +1,15 @@
 
 EventEmitter = require('events').EventEmitter
-http = require('http')
-https = require('https')
 
 module.currScope
 
 module.exports.start = () ->
   module.currScope = {}
+
+module.exports.connect = (req, res, next) ->
+  module.exports.start()
+  next()
+  return
 
 module.exports.get = (key) ->
   if module.currScope then module.currScope[key]

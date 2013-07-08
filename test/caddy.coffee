@@ -22,6 +22,8 @@ describe 'interface', ->
     expect(caddy.get).to.exist
   it 'should export a set function', ->
     expect(caddy.set).to.exist
+  it 'should export a connect function', ->
+    expect(caddy.connect).to.exist
 
   it 'should create a new data scope when start is called', ->
     expect(caddy.set('key', 'data')).to.not.exist
@@ -29,6 +31,15 @@ describe 'interface', ->
     caddy.start()
     expect(caddy.set('key', 'data')).to.exist
     expect(caddy.get('key')).to.exist
+    caddy.set('key', undefined)
+  it 'should create a new data scope when connect is called', ->
+    stub = new sinon.stub()
+    expect(caddy.get('key')).to.not.exist
+    caddy.connect(null, null, stub)
+    expect(caddy.set('key', 'data')).to.exist
+    expect(caddy.get('key')).to.exist
+    expect(stub.calledOnce).to.be.true
+    caddy.set('key', undefined)
   it 'should allow setting and getting of data by key', ->
     caddy.start()
     caddy.set('key', 'data')

@@ -1,16 +1,17 @@
 (function() {
-  var EventEmitter, http, https, wrap, _addListener, _nextTick, _on, _once, _removeListener, _setInterval, _setTimeout;
+  var EventEmitter, wrap, _addListener, _nextTick, _on, _once, _removeListener, _setInterval, _setTimeout;
 
   EventEmitter = require('events').EventEmitter;
-
-  http = require('http');
-
-  https = require('https');
 
   module.currScope;
 
   module.exports.start = function() {
     return module.currScope = {};
+  };
+
+  module.exports.connect = function(req, res, next) {
+    module.exports.start();
+    next();
   };
 
   module.exports.get = function(key) {
