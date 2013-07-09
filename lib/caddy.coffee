@@ -49,15 +49,17 @@ _on = EventEmitter.prototype.on
 EventEmitter.prototype.on = (event, callback) ->
   args = Array::slice.call(arguments)
   args[1] = wrap(callback)
-  args[1]._origCallback = callback
   _on.apply(this, args)
+  listeners = this.listeners(event)
+  listeners[listeners.length-1]._origCallback = callback
 
 _addListener = EventEmitter.prototype.addListener
 EventEmitter.prototype.addListener = (event, callback) ->
   args = Array::slice.call(arguments)
   args[1] = wrap(callback)
-  args[1]._origCallback = callback
   _addListener.apply(this, args)
+  listeners = this.listeners(event)
+  listeners[listeners.length-1]._origCallback = callback
 
 _once = EventEmitter.prototype.once
 EventEmitter.prototype.once = (event, callback) ->

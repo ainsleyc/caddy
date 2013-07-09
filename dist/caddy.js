@@ -73,21 +73,23 @@
   _on = EventEmitter.prototype.on;
 
   EventEmitter.prototype.on = function(event, callback) {
-    var args;
+    var args, listeners;
     args = Array.prototype.slice.call(arguments);
     args[1] = wrap(callback);
-    args[1]._origCallback = callback;
-    return _on.apply(this, args);
+    _on.apply(this, args);
+    listeners = this.listeners(event);
+    return listeners[listeners.length - 1]._origCallback = callback;
   };
 
   _addListener = EventEmitter.prototype.addListener;
 
   EventEmitter.prototype.addListener = function(event, callback) {
-    var args;
+    var args, listeners;
     args = Array.prototype.slice.call(arguments);
     args[1] = wrap(callback);
-    args[1]._origCallback = callback;
-    return _addListener.apply(this, args);
+    _addListener.apply(this, args);
+    listeners = this.listeners(event);
+    return listeners[listeners.length - 1]._origCallback = callback;
   };
 
   _once = EventEmitter.prototype.once;
