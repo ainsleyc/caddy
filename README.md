@@ -5,6 +5,8 @@ Per-request storage for arbitrary data.
 
 When the Caddy middleware is called (ex by Express), Caddy creates a data store that is accessable from any sub-modules used while handling the request. This can be a lot cleaner than attaching data to the res/req objects, which then have to be repeatedly passed around as parameters.
 
+Each request has it's own instance of the Caddy data store. There is no chance for the Caddy data of seperate requests to interact with each other, and no need for the user to keep track of which data belongs to which request.
+
 The data store is maintained across events and other async functions such as process.nextTick(). By extension, the store will still be available after higher-level async functions like http.request().
 
 Install
