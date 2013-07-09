@@ -109,30 +109,44 @@ describe 'function wrapping', ->
     emitter = new EventEmitter()
     emitter.removeListener('exit', ->)
     expect(spyEmitterRemoveListener.calledOnce).to.be.true
-  it 'should removed wrapped event handlers when removeListener is called', ->
+  it 'should remove event handlers correctly', ->
     emitter = new EventEmitter()
-    cb1 = ->
-      return 1
-    cb2 = ->
-      return 2
-    emitter.addListener('cb1', cb1)
-    emitter.addListener('cb1', cb2)
-    emitter.on('cb2', cb2)
 
-    expect(emitter.listeners('cb1').length).to.equal(2)
-    expect(emitter.listeners('cb2').length).to.equal(1)
+    addListener1 = ->
+    addListener2 = ->
+    expect(emitter.listeners('addListener').length).to.equal(0)
+    emitter.addListener('addListener', addListener1)
+    emitter.addListener('addListener', addListener2)
+    expect(emitter.listeners('addListener').length).to.equal(2)
 
-    emitter.removeListener('cb1', cb1)
-    expect(emitter.listeners('cb1').length).to.equal(1)
+    once1 = ->
+    once2 = ->
+    expect(emitter.listeners('once').length).to.equal(0)
+    emitter.once('once', once1)
+    emitter.once('once', once2)
+    expect(emitter.listeners('once').length).to.equal(2)
 
-    emitter.removeListener('cb1', cb2)
-    expect(emitter.listeners('cb1').length).to.equal(0)
+    on1 = ->
+    on2 = ->
+    expect(emitter.listeners('on').length).to.equal(0)
+    emitter.on('on', on1)
+    emitter.on('on', on2)
+    expect(emitter.listeners('on').length).to.equal(2)
 
-    emitter.removeListener('cb2', cb1)
-    expect(emitter.listeners('cb2').length).to.equal(1)
+    emitter.removeListener('addListener', addListener2)
+    expect(emitter.listeners('addListener').length).to.equal(1)
+    emitter.removeListener('addListener', addListener1)
+    expect(emitter.listeners('addListener').length).to.equal(0)
 
-    emitter.removeListener('cb2', cb2)
-    expect(emitter.listeners('cb2').length).to.equal(0)
+    emitter.removeListener('on', on1)
+    expect(emitter.listeners('on').length).to.equal(1)
+    emitter.removeListener('on', on2)
+    expect(emitter.listeners('on').length).to.equal(0)
+
+    emitter.removeListener('once', once2)
+    expect(emitter.listeners('once').length).to.equal(1)
+    emitter.removeListener('once', once1)
+    expect(emitter.listeners('once').length).to.equal(0)
 
 describe 'data persistence', ->
   it 'should save data between process.nextTick calls', (done) ->
@@ -237,5 +251,3 @@ describe 'node library compatibility', ->
           )
         )
         req.end()
-
-

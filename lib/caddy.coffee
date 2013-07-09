@@ -63,8 +63,9 @@ _once = EventEmitter.prototype.once
 EventEmitter.prototype.once = (event, callback) ->
   args = Array::slice.call(arguments)
   args[1] = wrap(callback)
-  args[1]._origCallback = callback
   _once.apply(this, args)
+  listeners = this.listeners(event)
+  listeners[listeners.length-1]._origCallback = callback
 
 _removeListener = EventEmitter.prototype.removeListener
 EventEmitter.prototype.removeListener = (event, callback) ->

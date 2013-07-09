@@ -93,11 +93,12 @@
   _once = EventEmitter.prototype.once;
 
   EventEmitter.prototype.once = function(event, callback) {
-    var args;
+    var args, listeners;
     args = Array.prototype.slice.call(arguments);
     args[1] = wrap(callback);
-    args[1]._origCallback = callback;
-    return _once.apply(this, args);
+    _once.apply(this, args);
+    listeners = this.listeners(event);
+    return listeners[listeners.length - 1]._origCallback = callback;
   };
 
   _removeListener = EventEmitter.prototype.removeListener;
