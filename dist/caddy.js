@@ -78,7 +78,8 @@
     args[1] = wrap(callback);
     _on.apply(this, args);
     listeners = this.listeners(event);
-    return listeners[listeners.length - 1]._origCallback = callback;
+    listeners[listeners.length - 1]._origCallback = callback;
+    return this;
   };
 
   _addListener = EventEmitter.prototype.addListener;
@@ -89,7 +90,8 @@
     args[1] = wrap(callback);
     _addListener.apply(this, args);
     listeners = this.listeners(event);
-    return listeners[listeners.length - 1]._origCallback = callback;
+    listeners[listeners.length - 1]._origCallback = callback;
+    return this;
   };
 
   _once = EventEmitter.prototype.once;
@@ -100,7 +102,8 @@
     args[1] = wrap(callback);
     _once.apply(this, args);
     listeners = this.listeners(event);
-    return listeners[listeners.length - 1]._origCallback = callback;
+    listeners[listeners.length - 1]._origCallback = callback;
+    return this;
   };
 
   _removeListener = EventEmitter.prototype.removeListener;
@@ -120,8 +123,9 @@
       }
     }
     if (!called) {
-      return _removeListener.apply(this, args);
+      _removeListener.apply(this, args);
     }
+    return this;
   };
 
 }).call(this);

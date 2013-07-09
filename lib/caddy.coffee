@@ -52,6 +52,7 @@ EventEmitter.prototype.on = (event, callback) ->
   _on.apply(this, args)
   listeners = this.listeners(event)
   listeners[listeners.length-1]._origCallback = callback
+  return this
 
 _addListener = EventEmitter.prototype.addListener
 EventEmitter.prototype.addListener = (event, callback) ->
@@ -60,6 +61,7 @@ EventEmitter.prototype.addListener = (event, callback) ->
   _addListener.apply(this, args)
   listeners = this.listeners(event)
   listeners[listeners.length-1]._origCallback = callback
+  return this
 
 _once = EventEmitter.prototype.once
 EventEmitter.prototype.once = (event, callback) ->
@@ -68,6 +70,7 @@ EventEmitter.prototype.once = (event, callback) ->
   _once.apply(this, args)
   listeners = this.listeners(event)
   listeners[listeners.length-1]._origCallback = callback
+  return this
 
 _removeListener = EventEmitter.prototype.removeListener
 EventEmitter.prototype.removeListener = (event, callback) ->
@@ -81,4 +84,5 @@ EventEmitter.prototype.removeListener = (event, callback) ->
       break
   if not called
     _removeListener.apply(this, args)
+  return this
 
