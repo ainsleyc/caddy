@@ -30,7 +30,7 @@
     }
   };
 
-  wrap = function(callback) {
+  wrap = function(once, event, callback) {
     var savedScope;
     if (module.currScope) {
       savedScope = module.currScope;
@@ -38,6 +38,9 @@
     return function() {
       if (savedScope) {
         module.currScope = savedScope;
+      }
+      if (once) {
+        this.removeListener(event, callback);
       }
       return callback.apply(this, arguments);
     };
@@ -48,7 +51,7 @@
   process.nextTick = function(callback) {
     var args;
     args = Array.prototype.slice.call(arguments);
-    args[0] = wrap(callback);
+    args[0] = wrap(false, null, callback);
     return _nextTick.apply(this, args);
   };
 
@@ -57,7 +60,7 @@
   global.setTimeout = function(callback) {
     var args;
     args = Array.prototype.slice.call(arguments);
-    args[0] = wrap(callback);
+    args[0] = wrap(false, null, callback);
     return _setTimeout.apply(this, args);
   };
 
@@ -66,7 +69,7 @@
   global.setInterval = function(callback) {
     var args;
     args = Array.prototype.slice.call(arguments);
-    args[0] = wrap(callback);
+    args[0] = wrap(false, null, callback);
     return _setInterval.apply(this, args);
   };
 
@@ -75,7 +78,7 @@
   EventEmitter.prototype.on = function(event, callback) {
     var args, listeners;
     args = Array.prototype.slice.call(arguments);
-    args[1] = wrap(callback);
+    args[1] = wrap(false, event, callback);
     _on.apply(this, args);
     listeners = this.listeners(event);
     listeners[listeners.length - 1]._origCallback = callback;
@@ -87,7 +90,7 @@
   EventEmitter.prototype.addListener = function(event, callback) {
     var args, listeners;
     args = Array.prototype.slice.call(arguments);
-    args[1] = wrap(callback);
+    args[1] = wrap(false, event, callback);
     _addListener.apply(this, args);
     listeners = this.listeners(event);
     listeners[listeners.length - 1]._origCallback = callback;
@@ -99,7 +102,7 @@
   EventEmitter.prototype.once = function(event, callback) {
     var args, listeners;
     args = Array.prototype.slice.call(arguments);
-    args[1] = wrap(callback);
+    args[1] = wrap(true, event, callback);
     _once.apply(this, args);
     listeners = this.listeners(event);
     listeners[listeners.length - 1]._origCallback = callback;
