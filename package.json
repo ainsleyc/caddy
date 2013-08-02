@@ -1,8 +1,12 @@
 {
   "name": "caddy",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "private": false,
   "main": "./dist/caddy.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ainsleychong/caddy.git"
+  },
   "dependencies": {},
   "devDependencies": {
     "mocha": "1.8.x",
