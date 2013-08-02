@@ -6,6 +6,7 @@ EventEmitter = require('events').EventEmitter
 spyNextTick = sinon.spy(process, 'nextTick')
 spySetTimeout = sinon.spy(global, 'setTimeout')
 spySetInterval = sinon.spy(global, 'setInterval')
+spySetImmediate = sinon.spy(global, 'setImmediate')
 
 spyEmitterAddListener = sinon.spy(EventEmitter.prototype, 'addListener')
 spyEmitterRemoveListener = sinon.spy(EventEmitter.prototype, 'removeListener')
@@ -75,6 +76,17 @@ describe 'function wrapping', ->
       expect(spySetInterval.calledOnce).to.be.true
       spySetInterval.reset()
       clearInterval(intervalId)
+      done()
+    ), 1000)
+
+  it 'should wrap global.setImmediate', ->
+    expect(global.setImmediate).to.not.equal(spySetImmediate)
+  it 'should call original global.setImmediate', (done) ->
+    spySetImmediate.reset()
+    immediateId = setImmediate((->
+      expect(spySetImmediate.calledOnce).to.be.true
+      spySetImmediate.reset()
+      clearImmediate(immediateId)
       done()
     ), 1000)
 
@@ -249,6 +261,36 @@ describe 'data persistence', ->
       clearInterval(interval3)
     , 100)
 
+  it 'should save data between global.setImmediate calls', (done) ->
+    caddy.start()
+    caddy.set('tag1', 1)
+    counter = 0
+    setImmediate(->
+      counter = counter + 1
+      expect(caddy.get('tag1')).to.equal(1)
+      expect(caddy.get('tag2')).to.not.exist
+      expect(caddy.get('tag3')).to.not.exist
+      if counter is 3 then done()
+    )
+    caddy.start()
+    caddy.set('tag2', 'two')
+    setImmediate(->
+      counter = counter + 1
+      expect(caddy.get('tag2')).to.equal('two')
+      expect(caddy.get('tag1')).to.not.exist
+      expect(caddy.get('tag3')).to.not.exist
+      if counter is 3 then done()
+    )
+    caddy.start()
+    caddy.set('tag3', [3])
+    setInterval(->
+      counter = counter + 1
+      expect(caddy.get('tag3')[0]).to.equal(3)
+      expect(caddy.get('tag2')).to.not.exist
+      expect(caddy.get('tag1')).to.not.exist
+      if counter is 3 then done()
+    )
+
 describe 'node library compatibility', ->
   it 'http.request', (done) ->
     urls = [
@@ -267,8 +309,8 @@ describe 'node library compatibility', ->
           port: 80
           path: '/'
           method: 'GET'
-        req = http.request(options, (res) ->
-          res.on('end', ->
+        req = http.get(options, (res) ->
+          res.on('data', (chunk) ->
             expect(caddy.get(url)).to.equal(url)
             reqCount++
             if reqCount is urls.length
