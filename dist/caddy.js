@@ -1,5 +1,5 @@
 (function() {
-  var EventEmitter, wrap, _addListener, _nextTick, _on, _once, _removeListener, _setImmediate, _setInterval, _setTimeout;
+  var EventEmitter, wrap, __nextDomainTick, _addListener, _nextTick, _on, _once, _removeListener, _setImmediate, _setInterval, _setTimeout;
 
   EventEmitter = require('events').EventEmitter;
 
@@ -54,6 +54,17 @@
       args = Array.prototype.slice.call(arguments);
       args[0] = wrap(false, null, callback);
       return _nextTick.apply(this, args);
+    };
+  }
+
+  __nextDomainTick = process._nextDomainTick;
+
+  if (__nextDomainTick != null) {
+    process._nextDomainTick = function(callback) {
+      var args;
+      args = Array.prototype.slice.call(arguments);
+      args[0] = wrap(false, null, callback);
+      return __nextDomainTick.apply(this, args);
     };
   }
 

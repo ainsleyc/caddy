@@ -36,6 +36,13 @@ if _nextTick?
     args[0] = wrap(false, null, callback)
     _nextTick.apply(this, args)
 
+__nextDomainTick = process._nextDomainTick
+if __nextDomainTick?
+  process._nextDomainTick = (callback) ->
+    args = Array::slice.call(arguments)
+    args[0] = wrap(false, null, callback)
+    __nextDomainTick.apply(this, args)
+
 _setTimeout = global.setTimeout
 if _setTimeout?
   global.setTimeout = (callback) ->

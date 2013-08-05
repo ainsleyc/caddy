@@ -4,6 +4,7 @@ sinon = require('sinon')
 EventEmitter = require('events').EventEmitter
 
 spyNextTick = sinon.spy(process, 'nextTick')
+spyNextDomainTick = sinon.spy(process, '_nextDomainTick')
 spySetTimeout = sinon.spy(global, 'setTimeout')
 spySetInterval = sinon.spy(global, 'setInterval')
 spySetImmediate = sinon.spy(global, 'setImmediate')
@@ -55,6 +56,16 @@ describe 'function wrapping', ->
     process.nextTick(->
       expect(spyNextTick.calledOnce).to.be.true
       spyNextTick.reset()
+      done()
+    )
+
+  it 'should wrap process._nextDomainTick', ->
+    expect(process._nextDomainTick).to.not.equal(spyNextDomainTick)
+  it 'should call original process._nextDomainTick', (done) ->
+    spyNextDomainTick.reset()
+    process._nextDomainTick(->
+      expect(spyNextDomainTick.calledOnce).to.be.true
+      spyNextDomainTick.reset()
       done()
     )
 
@@ -204,6 +215,30 @@ describe 'data persistence', ->
     caddy.start()
     caddy.set('tag3', [3])
     process.nextTick(->
+      expect(caddy.get('tag3')[0]).to.equal(3)
+      expect(caddy.get('tag2')).to.not.exist
+      expect(caddy.get('tag1')).to.not.exist
+      done()
+    )
+
+  it 'should save data between process._nextDomainTick calls', (done) ->
+    caddy.start()
+    caddy.set('tag1', 1)
+    process._nextDomainTick(->
+      expect(caddy.get('tag1')).to.equal(1)
+      expect(caddy.get('tag2')).to.not.exist
+      expect(caddy.get('tag3')).to.not.exist
+    )
+    caddy.start()
+    caddy.set('tag2', 'two')
+    process._nextDomainTick(->
+      expect(caddy.get('tag2')).to.equal('two')
+      expect(caddy.get('tag1')).to.not.exist
+      expect(caddy.get('tag3')).to.not.exist
+    )
+    caddy.start()
+    caddy.set('tag3', [3])
+    process._nextDomainTick(->
       expect(caddy.get('tag3')[0]).to.equal(3)
       expect(caddy.get('tag2')).to.not.exist
       expect(caddy.get('tag1')).to.not.exist
