@@ -64,13 +64,25 @@ if _setImmediate?
     args[0] = wrap(false, null, callback)
     _setImmediate.apply(this, args)
 
+_listeners = EventEmitter.prototype.listeners
+if _listeners?
+  EventEmitter.prototype.listeners = (event) ->
+    listeners = _listeners.call(this, event)
+    origListeners = []
+    for listener in listeners
+      if listener?._origCallback
+        origListeners.push(listener._origCallback)
+      else
+        origListeners.push(listener)
+    return origListeners
+
 _on = EventEmitter.prototype.on
 if _on?
   EventEmitter.prototype.on = (event, callback) ->
     args = Array::slice.call(arguments)
     args[1] = wrap(false, event, callback)
     _on.apply(this, args)
-    listeners = this.listeners(event)
+    listeners = _listeners.call(this, event)
     listeners[listeners.length-1]._origCallback = callback
     return this
 
@@ -80,7 +92,7 @@ if _addListener?
     args = Array::slice.call(arguments)
     args[1] = wrap(false, event, callback)
     _addListener.apply(this, args)
-    listeners = this.listeners(event)
+    listeners = _listeners.call(this, event)
     listeners[listeners.length-1]._origCallback = callback
     return this
 
@@ -90,7 +102,7 @@ if _once?
     args = Array::slice.call(arguments)
     args[1] = wrap(true, event, callback)
     _once.apply(this, args)
-    listeners = this.listeners(event)
+    listeners = _listeners.call(this, event)
     listeners[listeners.length-1]._origCallback = callback
     return this
 
@@ -99,7 +111,7 @@ if _removeListener?
   EventEmitter.prototype.removeListener = (event, callback) ->
     args = Array::slice.call(arguments)
     called = false
-    for listener in this.listeners(event)
+    for listener in _listeners.call(this, event)
       if listener?._origCallback is callback
         called = true
         args[1] = listener

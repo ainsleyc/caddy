@@ -1,5 +1,5 @@
 (function() {
-  var EventEmitter, wrap, __nextDomainTick, _addListener, _nextTick, _on, _once, _removeListener, _setImmediate, _setInterval, _setTimeout;
+  var EventEmitter, wrap, __nextDomainTick, _addListener, _listeners, _nextTick, _on, _once, _removeListener, _setImmediate, _setInterval, _setTimeout;
 
   EventEmitter = require('events').EventEmitter;
 
@@ -101,6 +101,25 @@
     };
   }
 
+  _listeners = EventEmitter.prototype.listeners;
+
+  if (_listeners != null) {
+    EventEmitter.prototype.listeners = function(event) {
+      var listener, listeners, origListeners, _i, _len;
+      listeners = _listeners.call(this, event);
+      origListeners = [];
+      for (_i = 0, _len = listeners.length; _i < _len; _i++) {
+        listener = listeners[_i];
+        if (listener != null ? listener._origCallback : void 0) {
+          origListeners.push(listener._origCallback);
+        } else {
+          origListeners.push(listener);
+        }
+      }
+      return origListeners;
+    };
+  }
+
   _on = EventEmitter.prototype.on;
 
   if (_on != null) {
@@ -109,7 +128,7 @@
       args = Array.prototype.slice.call(arguments);
       args[1] = wrap(false, event, callback);
       _on.apply(this, args);
-      listeners = this.listeners(event);
+      listeners = _listeners.call(this, event);
       listeners[listeners.length - 1]._origCallback = callback;
       return this;
     };
@@ -123,7 +142,7 @@
       args = Array.prototype.slice.call(arguments);
       args[1] = wrap(false, event, callback);
       _addListener.apply(this, args);
-      listeners = this.listeners(event);
+      listeners = _listeners.call(this, event);
       listeners[listeners.length - 1]._origCallback = callback;
       return this;
     };
@@ -137,7 +156,7 @@
       args = Array.prototype.slice.call(arguments);
       args[1] = wrap(true, event, callback);
       _once.apply(this, args);
-      listeners = this.listeners(event);
+      listeners = _listeners.call(this, event);
       listeners[listeners.length - 1]._origCallback = callback;
       return this;
     };
@@ -150,7 +169,7 @@
       var args, called, listener, _i, _len, _ref;
       args = Array.prototype.slice.call(arguments);
       called = false;
-      _ref = this.listeners(event);
+      _ref = _listeners.call(this, event);
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         listener = _ref[_i];
         if ((listener != null ? listener._origCallback : void 0) === callback) {

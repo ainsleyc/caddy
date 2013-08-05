@@ -195,6 +195,22 @@ describe 'function wrapping', ->
         done()
       )
     )
+  it 'should return the original callbacks when EventEmitter.listeners() is called', () ->
+    emitter = new EventEmitter()
+    event1 = ->
+      console.log('event1')
+    event2 = ->
+      console.log('event2')
+    event3 = ->
+      console.log('event3')
+    emitter.on('eventA', event1)
+    emitter.on('eventA', event2)
+    emitter.on('eventB', event3)
+    expect(emitter.listeners('eventA').length).to.equal(2)
+    expect(emitter.listeners('eventB').length).to.equal(1)
+    expect(emitter.listeners('eventA')[0]).to.equal(event1)
+    expect(emitter.listeners('eventA')[1]).to.equal(event2)
+    expect(emitter.listeners('eventB')[0]).to.equal(event3)
 
 describe 'data persistence', ->
   it 'should save data between process.nextTick calls', (done) ->
