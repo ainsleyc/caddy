@@ -39,7 +39,7 @@
       if (savedScope) {
         module.currScope = savedScope;
       }
-      if (once) {
+      if (once && this !== process) {
         this.removeListener(event, callback);
       }
       return callback.apply(this, arguments);

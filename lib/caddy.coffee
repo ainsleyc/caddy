@@ -25,7 +25,7 @@ wrap = (once, event, callback) ->
   ->
     if savedScope
       module.currScope = savedScope
-    if once
+    if once and this isnt process
       this.removeListener(event, callback)
     callback.apply(this, arguments)
 
